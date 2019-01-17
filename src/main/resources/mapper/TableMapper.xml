@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gen.table.mapper.TableMapper">
+
+	<select id="selectTableList" resultType="hashmap">
+		<![CDATA[
+		SELECT * FROM INFORMATION_SCHEMA.tables WHERE table_name like 'TB_%' OR table_name LIKE 'TQ_%' ORDER BY table_name ASC
+		]]> 
+	</select>
+	
+	<select id="selectTableColumnList" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[
+		SELECT 
+			Z.*,
+			CONCAT(#{fix},'{', GENERATOR_COL, '}') AS 'column_ex'
+			,(50 - LENGTH(Z.COL)) AS 'bin'
+		FROM
+		(
+			SELECT Y.*,
+					 CASE WHEN COL1 = '' THEN '_id'
+					 ELSE CONCAT(LOWER(COL1), UPPER(SUBSTR(COL2, 1, 1)), LOWER(SUBSTR(COL2, 2)), UPPER(SUBSTR(COL3, 1, 1)), LOWER(SUBSTR(COL3, 2)), UPPER(SUBSTR(COL4, 1, 1)), LOWER(SUBSTR(COL4, 2)))
+					 END GENERATOR_COL
+			FROM		
+			( 
+				SELECT REPLACE(SUBSTRING(SUBSTRING_INDEX(COL, '_', 1), LENGTH(SUBSTRING_INDEX(COL, '_', 1 - 1)) + 1), '_', '') AS COL1,
+						 REPLACE(SUBSTRING(SUBSTRING_INDEX(COL, '_', 2), LENGTH(SUBSTRING_INDEX(COL, '_', 2 - 1)) + 1), '_', '') AS COL2,
+						 REPLACE(SUBSTRING(SUBSTRING_INDEX(COL, '_', 3), LENGTH(SUBSTRING_INDEX(COL, '_', 3 - 1)) + 1), '_', '') AS COL3,
+						 REPLACE(SUBSTRING(SUBSTRING_INDEX(COL, '_', 4), LENGTH(SUBSTRING_INDEX(COL, '_', 4 - 1)) + 1), '_', '') AS COL4,
+						 X.*
+				FROM
+				(
+					SELECT column_name AS COL
+						,data_type
+						 ,character_octet_length AS data_length
+						 ,is_nullable AS nullable
+						 ,column_default AS data_default
+						 ,column_comment
+					FROM   information_schema.columns
+					WHERE  table_name = #{tableNm}
+				) AS X
+			) AS Y
+		)AS Z
+		]]>
+	</select>
+	
+	<select id="selectTablePkColumnList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+		SELECT 
+			Z.*,
+			CONCAT(#{fix},'{', GENERATOR_COL, '}') AS 'column_ex'
+			,(50 - LENGTH(Z.COL)) AS 'bin'
+		FROM
+		(
+			SELECT Y.*,
+					 CASE WHEN COL1 = '' THEN '_id'
+					 ELSE CONCAT(LOWER(COL1), UPPER(SUBSTR(COL2, 1, 1)), LOWER(SUBSTR(COL2, 2)), UPPER(SUBSTR(COL3, 1, 1)), LOWER(SUBSTR(COL3, 2)), UPPER(SUBSTR(COL4, 1, 1)), LOWER(SUBSTR(COL4, 2)))
+					 END GENERATOR_COL
+			FROM		
+			( 
+				SELECT REPLACE(SUBSTRING(SUBSTRING_INDEX(COL, '_', 1), LENGTH(SUBSTRING_INDEX(COL, '_', 1 - 1)) + 1), '_', '') AS COL1,
+						 REPLACE(SUBSTRING(SUBSTRING_INDEX(COL, '_', 2), LENGTH(SUBSTRING_INDEX(COL, '_', 2 - 1)) + 1), '_', '') AS COL2,
+						 REPLACE(SUBSTRING(SUBSTRING_INDEX(COL, '_', 3), LENGTH(SUBSTRING_INDEX(COL, '_', 3 - 1)) + 1), '_', '') AS COL3,
+						 REPLACE(SUBSTRING(SUBSTRING_INDEX(COL, '_', 4), LENGTH(SUBSTRING_INDEX(COL, '_', 4 - 1)) + 1), '_', '') AS COL4,
+						 X.*
+				FROM
+				(
+					SELECT column_name AS COL
+						,data_type
+						 ,character_octet_length AS data_length
+						 ,is_nullable AS nullable
+						 ,column_default AS data_default
+						 ,column_comment
+					FROM   information_schema.columns
+					WHERE  table_name = #{tableNm}
+					AND   column_key = 'PRI'
+				) AS X
+			) AS Y
+		)AS Z
+		]]>
+	</select>
+
+</mapper>
